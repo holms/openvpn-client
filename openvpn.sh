@@ -79,16 +79,6 @@ timezone() { local timezone="${1:-EST5EDT}"
     fi
 }
 
-### vpn: setup openvpn client
-# Arguments:
-#   server) VPN GW server
-#   user) user name on VPN
-#   pass) password on VPN
-# Return: configured .ovpn file
-
-vpn() {
-	
-}
 ### vpnportforward: setup vpn port forwarding
 # Arguments:
 #   port) forwarded port
@@ -118,12 +108,7 @@ Options (fields in '[]' are optional, '<>' are required):
                 <network> add a route to (allows replies once the VPN is up)
     -t \"\"       Configure timezone
                 possible arg: \"[timezone]\" - zoneinfo timezone for container
-    -v '<server;user;password>' Configure OpenVPN
-                required arg: \"<server>;<user>;<password>\"
-                <server> to connect to
-                <user> to authenticate as
-                <password> to authenticate with
-
+    
 The 'command' (if provided and valid) will be run instead of openvpn
 " >&2
     exit $RC
@@ -137,7 +122,6 @@ while getopts ":hdfp:r:t:v:" opt; do
         p) vpnportforward "$OPTARG" ;;
         r) return_route "$OPTARG" ;;
         t) timezone "$OPTARG" ;;
-        v) eval vpn $(sed 's/^\|$/"/g; s/;/" "/g' <<< $OPTARG) ;;
         "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
         ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
     esac
@@ -147,7 +131,6 @@ shift $(( OPTIND - 1 ))
 [[ "${FIREWALL:-""}" || -e /vpn/.firewall ]] && firewall
 [[ "${ROUTE:-""}" ]] && return_route "$ROUTE"
 [[ "${TZ:-""}" ]] && timezone "$TZ"
-[[ "${VPN:-""}" ]] && eval vpn $(sed 's/^\|$/"/g; s/;/" "/g' <<< $VPN)
 [[ "${DNS:-""}" ]] && dns
 [[ "${VPNPORT:-""}" ]] && vpnportforward "$VPNPORT"
 
